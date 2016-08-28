@@ -7,100 +7,68 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Executor;
 
 /**
  * Created by Rob on 8/28/2016.
  */
 public class TailManager {
     private static final Logger logger = LogManager.getLogger(TailManager.class);
-    public static final int DELAY_MILLIS = 1000;
+    private static final int DELAY_MILLIS = 1000;
 
     private LogFiles logFiles;
-    private List<Tailer> tailers;
-    private volatile boolean stopRequested = false;
+    private List<Tailer> tailers = new ArrayList<>();
+    private final Object lock = new Object();
+
+    private LogTailerListener listener = new LogTailerListener();
 
     public TailManager(LogFiles logFiles) {
         this.logFiles = logFiles;
     }
 
 
-//    public void start() {
-//        List<BufferedReader> readers = new ArrayList<>();
-//
-//        for (LogFile logFile : logFiles.getLogFiles()) {
-//            try {
-//                FileReader fileReader = new FileReader(logFile.getPath());
-//                BufferedReader reader = new BufferedReader(fileReader);
-//                readers.add(reader);
-//                fileReader.
-//
-//            } catch (FileNotFoundException e) {
-//                logger.error("Could not create BufferedReader for file: " + logFile.getPath(), e);
-//            }
-//            logger.info("BufferedReaders created for " + readers.size() + " files.");
-//        }
-//
-//        // Skip to heads of files
-//
-//        try {
-//            while (!stopRequested) {
-//                for (BufferedReader reader : readers) {
-//                    String line = reader.readLine();
-//                    if (line != null) {
-//                        // process that line
-//                        logger.info(line);
-//                    }
-//                }
-//                Thread.sleep(1000); // sleep only once in polling loop
-//            }
-//        } catch (Exception e) {
-//            logger.error("Exception polling file", e);
-//        }
-//    }
-
     /**
-     *  Apache Tailer implementation
+     * Apache Tailer implementation
      */
     public void start() {
-        // create Tailer Listener
-        LogTailerListener listener = new LogTailerListener();
-
-        // create tailers for each file
-        tailers = new ArrayList<>();
-        for (LogFile logFile : logFiles.getLogFiles()) {
-            File file = new File(logFile.getPath());
-            Tailer tailer = new Tailer(file, listener, DELAY_MILLIS, true);
-            tailers.add(tailer);
-        }
-
-        Executor executor = new Executor() {
-            public void execute(Runnable command) {
-                command.run();
+        synchronized (lock) {
+            // check tailers running to be safe and prevent memory/thread leak
+            if (!tailers.isEmpty()) {
+                logger.error("Tailers may still be running. Stopping first");
+                stop();
             }
-        };
 
-        for (Tailer tailer : tailers) {
-            logger.info("Executing tailer", tailer);
-            executor.execute(tailer);
+            // create tailers for each file
+            for (LogFile logFile : logFiles.getLogFiles()) {
+                File file = new File(logFile.getPath());
+                Tailer tailer = new Tailer(file, listener, DELAY_MILLIS, true);
+                tailers.add(tailer);
+            }
+            logger.info("Tailers created for " + tailers.size() + " files.");
+
+
+            for (Tailer tailer : tailers) {
+                logger.debug("Starting tailer " + tailer.getFile());
+                Thread thread = new Thread(tailer);
+                thread.start();
+            }
+
+            logger.info("Tail startup completed.");
         }
     }
 
 
     public void stop() {
-        for (Tailer tailer : tailers) {
-            logger.info("Stopping tailer", tailer);
-            tailer.stop();
+        synchronized (lock) {
+            Iterator<Tailer> itr = tailers.iterator();
+            while (itr.hasNext()) {
+                Tailer tailer = itr.next();
+                logger.debug("Stopping tailer " + tailer.getFile());
+                tailer.stop();
+                itr.remove();
+            }
         }
-    }
-
-    public boolean isStopRequested() {
-        return stopRequested;
-    }
-
-    public void setStopRequested(boolean stopRequested) {
-        this.stopRequested = stopRequested;
     }
 
 
@@ -109,6 +77,12 @@ public class TailManager {
         public void handle(String line) {
             super.handle(line);
             logger.info(line);
+        }
+
+        @Override
+        public void handle(Exception e) {
+            super.handle(e);
+            logger.error("Exception occurred in LogTailerListener", e);
         }
     }
 }

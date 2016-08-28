@@ -4,5 +4,9 @@
             <name>File1</name>
             <path>F:\workspace\java\devtail\testdata\file1.log</path>
         </logFile>
+        <logFile>
+            <name>File2</name>
+            <path>F:\workspace\java\devtail\testdata\file2.log</path>
+        </logFile>
     </files>
 </settings>

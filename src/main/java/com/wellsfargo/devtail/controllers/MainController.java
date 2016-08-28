@@ -19,7 +19,6 @@ public class MainController {
     private TailManager tailManager;
     private Settings settings;
 
-    @FXML private Button btnTail;
 
     @FXML
     public void initialize() {
@@ -37,5 +36,11 @@ public class MainController {
     protected void handleTailButtonAction(ActionEvent event) {
         logger.info("Tail Button clicked.");
         tailManager.start();
+    }
+
+    @FXML
+    protected void handleStopButtonAction(ActionEvent event) {
+        logger.info("Stop Button clicked.");
+        tailManager.stop();
     }
 }
