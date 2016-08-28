@@ -2,6 +2,7 @@ package com.wellsfargo.devtail.controllers;
 
 import com.wellsfargo.devtail.io.Settings;
 import com.wellsfargo.devtail.io.SettingsLoader;
+import com.wellsfargo.devtail.io.TailManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -15,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 public class MainController {
     private static final Logger logger = LogManager.getLogger(MainController.class);
 
+    private TailManager tailManager;
     private Settings settings;
 
     @FXML private Button btnTail;
@@ -25,6 +27,7 @@ public class MainController {
 
         try {
             settings = SettingsLoader.load("settings.xml");
+            tailManager = new TailManager(settings.getLogFiles());
         }catch (Exception e) {
             logger.error("Error loading settings, ", e);
         }
@@ -33,5 +36,6 @@ public class MainController {
     @FXML
     protected void handleTailButtonAction(ActionEvent event) {
         logger.info("Tail Button clicked.");
+        tailManager.start();
     }
 }
