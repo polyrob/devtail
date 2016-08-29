@@ -26,7 +26,7 @@ public class Main extends Application {
         logger.info("Starting FXML application...");
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/view/main.fxml"));
-            Scene scene = new Scene(root, 640, 480);
+            Scene scene = new Scene(root, 1280, 720);
             primaryStage.setTitle("Devtail");
             primaryStage.setScene(scene);
 

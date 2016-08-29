@@ -16,9 +16,9 @@ public class TableProcessor implements LineProcessor {
     }
 
     @Override
-    public void process(String line) {
+    public void process(String filename, String line) {
         String[] split = line.split("\\|");
-        LogRow row = new LogRow(new SimpleStringProperty("filename"), new SimpleStringProperty(split[0]), new SimpleStringProperty(split[split.length-1]));
+        LogRow row = new LogRow(new SimpleStringProperty(filename), new SimpleStringProperty(split[0]), new SimpleStringProperty(split[split.length-1]));
         data.add(row);
     }
 }

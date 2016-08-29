@@ -5,6 +5,6 @@ package com.wellsfargo.devtail.digest;
  */
 public interface LineProcessor {
 
-    void process(String line);
+    void process(String filename, String line);
 
 }

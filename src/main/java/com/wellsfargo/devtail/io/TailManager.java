@@ -1,6 +1,7 @@
 package com.wellsfargo.devtail.io;
 
 import com.wellsfargo.devtail.digest.LineProcessor;
+import javafx.beans.property.SimpleBooleanProperty;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListenerAdapter;
 import org.apache.logging.log4j.LogManager;
@@ -24,7 +25,8 @@ public class TailManager {
     private List<Tailer> tailers = new ArrayList<>();
     private final Object lock = new Object();
 
-    private LogTailerListener listener = new LogTailerListener();
+    private SimpleBooleanProperty tailing = new SimpleBooleanProperty(false);
+
 
     public TailManager(LineProcessor processor, List<LogFile> logFiles) {
         this.processor = processor;
@@ -40,12 +42,15 @@ public class TailManager {
             // check tailers running to be safe and prevent memory/thread leak
             if (!tailers.isEmpty()) {
                 logger.error("Tailers may still be running. Stopping first");
-                stop();
+                return;
             }
+
+            tailing.set(true);
 
             // create tailers for each file
             for (LogFile logFile : logFiles) {
                 File file = new File(logFile.getPath());
+                LogTailerListener listener = new LogTailerListener(logFile.getName());
                 Tailer tailer = new Tailer(file, listener, DELAY_MILLIS, true);
                 tailers.add(tailer);
             }
@@ -73,15 +78,22 @@ public class TailManager {
                 itr.remove();
             }
         }
+        tailing.set(false);
     }
 
 
     private class LogTailerListener extends TailerListenerAdapter {
+        private final String filename;
+
+        public LogTailerListener(String filename) {
+            this.filename = filename;
+        }
+
         @Override
         public void handle(String line) {
             super.handle(line);
             logger.info(line);
-            processor.process(line);
+            processor.process(filename, line);
         }
 
         @Override
@@ -89,5 +101,10 @@ public class TailManager {
             super.handle(e);
             logger.error("Exception occurred in LogTailerListener", e);
         }
+    }
+
+
+    public SimpleBooleanProperty tailingProperty() {
+        return tailing;
     }
 }
