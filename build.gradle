@@ -1,5 +1,5 @@
-group 'com.wellsfargo'
-version '1.0-SNAPSHOT'
+group 'com.robbomb'
+version '1.0'
 
 apply plugin: 'java'
 
