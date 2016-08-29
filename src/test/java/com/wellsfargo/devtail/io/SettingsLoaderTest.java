@@ -2,6 +2,7 @@ package com.wellsfargo.devtail.io;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -13,5 +14,8 @@ public class SettingsLoaderTest {
     public void loadTest() {
         Settings settings = SettingsLoader.load("settings.xml");
         assertNotNull(settings);
+        assertNotNull(settings.getFiles());
+        assertEquals(settings.getFiles().size(), 2);
+
     }
 }

@@ -3,10 +3,12 @@ package com.wellsfargo.devtail;/**
  */
 
 import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,6 +29,14 @@ public class Main extends Application {
             Scene scene = new Scene(root, 640, 480);
             primaryStage.setTitle("Devtail");
             primaryStage.setScene(scene);
+
+            primaryStage.setOnCloseRequest(event -> {
+                logger.info("Stage is closing");
+                primaryStage.close();
+                System.exit(0);
+            });
+
+
             primaryStage.show();
         } catch (IOException e) {
            logger.error("Error loading devtail, ", e);

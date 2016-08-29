@@ -4,6 +4,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.List;
 
 /**
  * Created by Rob on 8/28/2016.
@@ -13,16 +14,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Settings {
 
     @XmlElement(name = "files")
-    private LogFiles logFiles = null;
+    private LogFiles files = null;
 
 
 
 
-    public LogFiles getLogFiles() {
-        return logFiles;
+    public List<LogFile> getFiles() {
+        return files.getLogFiles();
     }
 
-    public void setLogFiles(LogFiles logFiles) {
-        this.logFiles = logFiles;
+    public void setFiles(LogFiles files) {
+        this.files = files;
     }
 }

@@ -1,5 +1,6 @@
 package com.wellsfargo.devtail.io;
 
+import com.wellsfargo.devtail.digest.LineProcessor;
 import org.apache.commons.io.input.Tailer;
 import org.apache.commons.io.input.TailerListenerAdapter;
 import org.apache.logging.log4j.LogManager;
@@ -17,13 +18,16 @@ public class TailManager {
     private static final Logger logger = LogManager.getLogger(TailManager.class);
     private static final int DELAY_MILLIS = 1000;
 
-    private LogFiles logFiles;
+    private LineProcessor processor;
+
+    private List<LogFile> logFiles;
     private List<Tailer> tailers = new ArrayList<>();
     private final Object lock = new Object();
 
     private LogTailerListener listener = new LogTailerListener();
 
-    public TailManager(LogFiles logFiles) {
+    public TailManager(LineProcessor processor, List<LogFile> logFiles) {
+        this.processor = processor;
         this.logFiles = logFiles;
     }
 
@@ -40,7 +44,7 @@ public class TailManager {
             }
 
             // create tailers for each file
-            for (LogFile logFile : logFiles.getLogFiles()) {
+            for (LogFile logFile : logFiles) {
                 File file = new File(logFile.getPath());
                 Tailer tailer = new Tailer(file, listener, DELAY_MILLIS, true);
                 tailers.add(tailer);
@@ -77,6 +81,7 @@ public class TailManager {
         public void handle(String line) {
             super.handle(line);
             logger.info(line);
+            processor.process(line);
         }
 
         @Override
