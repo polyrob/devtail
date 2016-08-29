@@ -1,0 +1,16 @@
+.text-field {
+    -fx-font-size: 11pt;
+    -fx-font-family: "Monospaced";
+}
+.table-view .column-header{
+    -fx-font-size: 12;
+}
+
+.table-cell {
+    -fx-font-size: 11px;
+    -fx-font-family: "Monospaced";
+}
+
+.table-row-cell {
+    -fx-cell-size: 18px;
+}
